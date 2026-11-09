@@ -2,9 +2,9 @@
 
 A research project on turning knowledge-graph triplets *(subject, predicate, object)* into fluent English sentences by fine-tuning a T5 encoder–decoder. The repository holds the paper source (LaTeX) and a PyTorch / Hugging Face training and evaluation pipeline.
 
-![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)
-![PyTorch](https://img.shields.io/badge/PyTorch-2.0-EE4C2C?logo=pytorch&logoColor=white)
-![Transformers](https://img.shields.io/badge/%F0%9F%A4%97%20Transformers-4.30-FFD21E)
+![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-2.x-EE4C2C?logo=pytorch&logoColor=white)
+![Transformers](https://img.shields.io/badge/%F0%9F%A4%97%20Transformers-4.x-FFD21E)
 ![LaTeX](https://img.shields.io/badge/LaTeX-elsarticle-008080?logo=latex&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
@@ -28,45 +28,59 @@ input : "subject: <s> predicate: <p> object: <o>"
 target: <reference sentence>
 ```
 
+![Architecture](t5_architecture.png)
+
 ### Pipeline in this repository
 
 | Stage | File | What it does |
 |-------|------|--------------|
-| Data loading | `data_preprocessing.py` | Loads `Babelscape/rebel` with 🤗 `datasets`, converts the train split to pandas, drops duplicate and empty rows, checks for `subject` / `predicate` / `object` / `text` columns and makes an 80/20 train/validation split (`random_state=42`) |
-| Dataset | `model.py` → `TripletDataset` | Linearises each triplet and tokenises inputs and targets (max length 512, padded and truncated) |
-| Model | `model.py` → `TripletToSentenceModel` | `T5ForConditionalGeneration` initialised from `t5-small` (configurable). Runs on CUDA when available. |
-| Training | `model.py` → `train()` | Hugging Face `Trainer`: 10 epochs, batch size 64, 500 warm-up steps, weight decay 0.01. Evaluates and checkpoints every epoch, keeps the best model by validation loss and saves it to `./t5_triplet_model` |
-| Decoding | `model.py` → `generate_sentence()` | Beam search (4 beams), `max_length=50`, `length_penalty=0.6` |
-| Evaluation | `evaluation.py` → `ModelEvaluator` | **BERTScore** precision, recall and F1 (English, baseline-rescaled) between generated and reference sentences |
-| Driver | `main.py` | Loads data → trains → evaluates on the validation split → prints example generations (e.g. *(Albert Einstein, developed, theory of relativity)*) |
+| Data loading | `data_preprocessing.py` | Streams REBEL from the Hugging Face Hub (the Parquet conversion of `Babelscape/rebel-dataset`, so no dataset script is needed), parses its linearised `<triplet> … <subj> … <obj> …` field into *(subject, predicate, object)*, and keeps sentences that express exactly one triplet (`--all-triplets` keeps the first triplet of every sentence). Spacing such as `Paris , France` is normalised. A local CSV/JSON(L) can be used instead. |
+| Cleaning | `DataPreprocessor.clean_data()` | Checks for `subject` / `predicate` / `object` / `text`, drops empty and duplicate rows, makes a shuffled 80/20 train/validation split (seed 42) |
+| Dataset | `model.py` → `TripletDataset` | Linearises each triplet and tokenises inputs and targets (max 128 tokens each); batches are padded dynamically and padding is masked out of the loss |
+| Model | `model.py` → `TripletToSentenceModel` | Any seq2seq checkpoint (`t5-small` by default). Uses CUDA, Apple-Silicon MPS or CPU. |
+| Training | `model.py` → `train()` | Hugging Face `Trainer` with weight decay 0.01 and warm-up. Evaluates and checkpoints every epoch, keeps the best model by validation loss and saves it to `--output-dir` |
+| Decoding | `model.py` → `generate_batch()` | Batched beam search (4 beams), up to 50 new tokens, `length_penalty=0.6` |
+| Evaluation | `evaluation.py` → `ModelEvaluator` | Corpus BLEU (sacreBLEU), ROUGE-1/2/L F1, token-overlap precision/recall/F1 and, unless `--no-bertscore`, **BERTScore** P/R/F1 (baseline-rescaled) |
+| Driver | `main.py` | Data → train → evaluate on the validation split → writes `metrics.json` and `predictions.jsonl` → prints example generations |
 
-### Described in the paper (not part of this code)
+### Paper vs. code
 
-The manuscript also describes components that are **not** implemented in the Python files here: a LanguageTool-based sentence validator with an improve-and-retry loop, BLEU / ROUGE / grammar-error metrics, a `t5-base` configuration with different hyper-parameters (learning rate 2e-5, batch size 8, 3 epochs), and Apple-Silicon (MPS) support. Treat the code as the baseline training and evaluation pipeline and the paper as the broader design.
+`main.py --preset` picks the hyper-parameters. Flags such as `--epochs` override a preset.
+
+| | `--preset code` (default) | `--preset paper` (as in `main.tex`) |
+|---|---|---|
+| Model | `t5-small` | `t5-base` |
+| Epochs | 10 | 3 |
+| Batch size | 64 | 8 |
+| Learning rate | 5e-5 | 2e-5 |
+
+Still described in the paper but **not** implemented here: the LanguageTool-based sentence validator with its improve-and-retry loop, grammar-error counts, the "overall quality score" and the template-based baseline. The results table in the paper therefore can't be reproduced from this code.
 
 ## Repository structure
 
 ```
 triple_sentence_generation/
-├── main.tex                 # Paper source (elsarticle / Procedia)
-├── main.py                  # End-to-end driver: data → train → evaluate → examples
-├── data_preprocessing.py    # REBEL loading, cleaning, train/val split
-├── model.py                 # TripletDataset + T5 fine-tuning and generation
-├── evaluation.py            # BERTScore-based evaluation
+├── main.tex                    # Paper source (elsarticle / Procedia)
+├── references.bib              # Bibliography for main.tex
+├── t5_architecture.png         # Figure 1 (generated by scripts/make_architecture_figure.py)
+├── main.py                     # CLI driver: data → train → evaluate → examples
+├── data_preprocessing.py       # REBEL streaming/parsing, local files, cleaning, split
+├── model.py                    # TripletDataset + T5 fine-tuning and generation
+├── evaluation.py               # BLEU, ROUGE, token overlap, BERTScore
+├── test_pipeline.py            # Fast tests (no model downloads)
+├── examples/sample_triplets.csv  # 32 hand-written triplet/sentence pairs for smoke runs
+├── scripts/make_architecture_figure.py
 ├── requirements.txt
-├── LICENSE                  # MIT
-└── triplet-sentence-generator   # Git submodule pointer (see note below)
+└── LICENSE                     # MIT
 ```
-
-> **Note:** `triplet-sentence-generator` is recorded as a submodule commit, but there is no `.gitmodules` file, so it cannot be checked out. The extended implementation it pointed to (validators, BLEU/ROUGE evaluation, WebNLG processing) is not available from this repository.
 
 ## Running the code
 
 ### Requirements
 
-- Python 3.9+ (pinned versions are in `requirements.txt`: `transformers 4.30.2`, `torch 2.0.1`, `datasets 2.13.1`, `bert-score 0.3.13`, …)
-- A CUDA GPU is strongly recommended for fine-tuning. The batch size of 64 at sequence length 512 needs a lot of GPU memory, so lower `per_device_train_batch_size` in `model.py` if needed.
-- Internet access on first run, to download `t5-small`, the REBEL dataset and the BERTScore model
+- Python 3.10+
+- A CUDA GPU is recommended for real fine-tuning runs; CPU and Apple-Silicon MPS work for small experiments
+- Internet access on first run, to download the model, REBEL rows and (optionally) the BERTScore model (`roberta-large`, about 1.4 GB)
 
 ### Setup
 
@@ -79,15 +93,24 @@ source venv/bin/activate          # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### Train and evaluate
+### Quick smoke run (a few minutes on a laptop)
 
 ```bash
-python main.py
+python main.py --data examples/sample_triplets.csv --model t5-small \
+    --max-steps 40 --batch-size 8 --learning-rate 3e-4 --warmup-steps 0 --no-bertscore
 ```
 
-The script logs BERTScore P/R/F1 on the validation split and prints generated sentences for the example triplets. The fine-tuned model and tokenizer are saved to `./t5_triplet_model`.
+### Train and evaluate on REBEL
 
-**Data format:** `DataPreprocessor.clean_data()` expects flat `subject`, `predicate`, `object` and `text` columns. The raw `Babelscape/rebel` release stores relations in a different layout (a `context` passage with linearised `triplets`), so you may need to add a conversion step that maps REBEL records to one row per triplet before training.
+```bash
+python main.py --max-samples 50000                    # code defaults (t5-small, 10 epochs)
+python main.py --preset paper --max-samples 50000     # t5-base, 3 epochs, batch 8, lr 2e-5
+python main.py --help                                 # all options
+```
+
+REBEL has about 3 million training sentences, so `--max-samples` is the practical way to size a run. The model, tokenizer, `metrics.json` and `predictions.jsonl` are written to `./t5_triplet_model` (`--output-dir`).
+
+Local data needs `subject`, `predicate`, `object` and `text` columns (`.csv`, `.json` or `.jsonl`): `python main.py --data my_pairs.csv`.
 
 ### Use a trained model
 
@@ -96,33 +119,32 @@ from model import TripletToSentenceModel
 
 m = TripletToSentenceModel(model_name="./t5_triplet_model")
 print(m.generate_sentence("William Shakespeare", "wrote", "Hamlet"))
+print(m.generate_batch([("Paris", "capital of", "France"), ("Python", "developer", "Guido van Rossum")]))
+```
+
+### Tests
+
+```bash
+python -m unittest -v test_pipeline
 ```
 
 ## Building the paper
 
-The paper uses Elsevier's `elsarticle` class, which ships with TeX Live and MiKTeX.
+The paper uses Elsevier's `elsarticle` class, which ships with TeX Live and MiKTeX. All inputs (`references.bib`, `t5_architecture.png`) are in the repository.
 
 ```bash
-pdflatex main.tex
-bibtex   main
-pdflatex main.tex
-pdflatex main.tex
-# or simply:
 latexmk -pdf main.tex
+# or: pdflatex main.tex && bibtex main && pdflatex main.tex && pdflatex main.tex
+# or: tectonic main.tex
 ```
 
-`main.tex` references two files that are not in the repository yet:
-
-- `t5_architecture.png`: the architecture figure (compilation stops with an error until you add it or comment out the `\includegraphics` line)
-- `references.bib`: the bibliography (BibTeX will warn and the reference list will be empty)
-
-You can also upload `main.tex` (plus the figure and `.bib` file) to Overleaf.
+To regenerate the figure: `python scripts/make_architecture_figure.py`. You can also upload `main.tex`, `references.bib` and the figure to Overleaf.
 
 ## Limitations
 
-- Training uses only the REBEL train split, re-split 80/20. There is no held-out test split in the code.
-- The "traditional precision / recall / F1" printed by `main.py` uses constant dummy labels, so it is always 1.0 and is not a meaningful metric. Use BERTScore instead.
-- Results reported in the manuscript come from the extended system described there and cannot be reproduced from this code alone.
+- Evaluation uses a validation split carved out of the REBEL training split; REBEL's own validation/test splits are not used yet.
+- REBEL sentences often mention more than the single triplet they are paired with, so references contain extra facts the model can't know. Scores are therefore lower than on clean data-to-text corpora such as WebNLG.
+- The sentence-validation stage and template baseline described in the paper are not implemented (see *Paper vs. code*).
 
 ## Acknowledgements
 
