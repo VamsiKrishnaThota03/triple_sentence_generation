@@ -1,0 +1,33 @@
+subject,predicate,object,text
+Paris,capital of,France,Paris is the capital of France.
+Berlin,capital of,Germany,Berlin is the capital of Germany.
+Tokyo,capital of,Japan,Tokyo is the capital of Japan.
+Ottawa,capital of,Canada,Ottawa is the capital of Canada.
+Canberra,capital of,Australia,Canberra is the capital of Australia.
+Madrid,capital of,Spain,Madrid is the capital of Spain.
+Rome,capital of,Italy,Rome is the capital of Italy.
+New Delhi,capital of,India,New Delhi is the capital of India.
+Albert Einstein,date of birth,14 March 1879,Albert Einstein was born on 14 March 1879.
+Marie Curie,date of birth,7 November 1867,Marie Curie was born on 7 November 1867.
+Isaac Newton,date of birth,25 December 1642,Isaac Newton was born on 25 December 1642.
+Ada Lovelace,date of birth,10 December 1815,Ada Lovelace was born on 10 December 1815.
+William Shakespeare,notable work,Hamlet,William Shakespeare wrote Hamlet.
+Jane Austen,notable work,Pride and Prejudice,Jane Austen wrote Pride and Prejudice.
+George Orwell,notable work,Nineteen Eighty-Four,George Orwell wrote Nineteen Eighty-Four.
+Leo Tolstoy,notable work,War and Peace,Leo Tolstoy wrote War and Peace.
+Rabindranath Tagore,notable work,Gitanjali,Rabindranath Tagore wrote Gitanjali.
+The Nile,located in,Africa,The Nile is a river in Africa.
+The Amazon,located in,South America,The Amazon is a river in South America.
+The Danube,located in,Europe,The Danube is a river in Europe.
+The Ganges,located in,India,The Ganges is a river in India.
+Mount Everest,located in,Nepal,Mount Everest is located in Nepal.
+Mont Blanc,located in,the Alps,Mont Blanc is located in the Alps.
+Kilimanjaro,located in,Tanzania,Kilimanjaro is located in Tanzania.
+Python,developer,Guido van Rossum,Python was created by Guido van Rossum.
+Linux,developer,Linus Torvalds,Linux was created by Linus Torvalds.
+C,developer,Dennis Ritchie,C was created by Dennis Ritchie.
+Java,developer,James Gosling,Java was created by James Gosling.
+Lionel Messi,country of citizenship,Argentina,Lionel Messi is a citizen of Argentina.
+Sachin Tendulkar,country of citizenship,India,Sachin Tendulkar is a citizen of India.
+Serena Williams,country of citizenship,United States,Serena Williams is a citizen of the United States.
+Roger Federer,country of citizenship,Switzerland,Roger Federer is a citizen of Switzerland.

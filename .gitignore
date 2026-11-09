@@ -44,3 +44,15 @@ model_output/
 # OS specific
 .DS_Store
 Thumbs.db 
+# Training outputs (main.py --output-dir)
+t5_triplet_model/
+
+# LaTeX build files
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.out
+*.synctex.gz
+main.pdf
