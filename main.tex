@@ -56,10 +56,10 @@ Our main contributions include:
 Template-based systems have been widely used for structured data to text conversion due to their reliability and predictability. These systems use predefined templates that are filled with data from knowledge triplets. While effective for simple cases, they often produce repetitive and unnatural language, especially when dealing with complex relationships or when context needs to be considered.
 
 \subsection{Neural Approaches to NLG}
-Recent advances in deep learning have led to the development of neural NLG systems that can generate more natural and varied language. Models like T5, BART, and GPT have shown promising results in various NLG tasks. However, these models may struggle with factual accuracy and can sometimes generate sentences that deviate from the intended meaning of the knowledge triplets.
+Recent advances in deep learning have led to the development of neural NLG systems that can generate more natural and varied language. Models like T5~\cite{raffel2020t5}, BART~\cite{lewis2020bart}, and GPT~\cite{radford2019gpt2} have shown promising results in various NLG tasks. However, these models may struggle with factual accuracy and can sometimes generate sentences that deviate from the intended meaning of the knowledge triplets.
 
 \subsection{REBEL Dataset}
-The REBEL dataset has become a valuable resource for evaluating NLG systems that convert structured data to text. It contains knowledge triplets extracted from various sources, along with corresponding natural language descriptions. This dataset has been used to evaluate both template-based and neural approaches to NLG.
+The REBEL dataset~\cite{huguetcabot2021rebel} has become a valuable resource for evaluating NLG systems that convert structured data to text. It contains knowledge triplets extracted from various sources, along with corresponding natural language descriptions. This dataset has been used to evaluate both template-based and neural approaches to NLG.
 
 \section{Methodology}
 Our sentence generation system consists of two main components: a T5-based sentence generator and a sophisticated sentence validator.
@@ -154,10 +154,10 @@ The training arguments include:
 \subsection{Evaluation Metrics}
 We use a comprehensive set of metrics to evaluate the quality of generated sentences:
 \begin{itemize}
-    \item BLEU score: Measures the precision of n-grams in the generated sentence compared to a reference sentence
-    \item ROUGE scores (ROUGE-1, ROUGE-2, ROUGE-L): Measure the recall of n-grams in the generated sentence
+    \item BLEU score~\cite{papineni2002bleu}: Measures the precision of n-grams in the generated sentence compared to a reference sentence
+    \item ROUGE scores~\cite{lin2004rouge} (ROUGE-1, ROUGE-2, ROUGE-L): Measure the recall of n-grams in the generated sentence
     \item Grammar errors: Count of grammar errors detected by LanguageTool
-    \item Semantic similarity: Measures the semantic similarity between the generated and reference sentences
+    \item Semantic similarity (e.g.\ BERTScore~\cite{zhang2020bertscore}): Measures the semantic similarity between the generated and reference sentences
     \item Overall quality score: A weighted combination of the above metrics
 \end{itemize}
 
