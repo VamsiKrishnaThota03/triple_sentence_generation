@@ -8,8 +8,8 @@ A research project on turning knowledge-graph triplets *(subject, predicate, obj
 ![LaTeX](https://img.shields.io/badge/LaTeX-elsarticle-008080?logo=latex&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-[![CI](https://github.com/VamsiKrishnaThota03/triple_sentence_generation/actions/workflows/ci.yml/badge.svg)](https://github.com/VamsiKrishnaThota03/triple_sentence_generation/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/VamsiKrishnaThota03/triple_sentence_generation/actions/workflows/codeql.yml/badge.svg)](https://github.com/VamsiKrishnaThota03/triple_sentence_generation/actions/workflows/codeql.yml)
+[![CI](https://github.com/VamsiKrishnaThota03/triplet-to-sentence-t5/actions/workflows/ci.yml/badge.svg)](https://github.com/VamsiKrishnaThota03/triplet-to-sentence-t5/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/VamsiKrishnaThota03/triplet-to-sentence-t5/actions/workflows/codeql.yml/badge.svg)](https://github.com/VamsiKrishnaThota03/triplet-to-sentence-t5/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **Authors:** Vamsi Krishna, Tejeshwar Rao, Ruthvika Talagampala, Nida Afseen  
@@ -89,7 +89,7 @@ triple_sentence_generation/
 ### Setup
 
 ```bash
-git clone https://github.com/VamsiKrishnaThota03/triple_sentence_generation.git
+git clone https://github.com/VamsiKrishnaThota03/triplet-to-sentence-t5.git
 cd triple_sentence_generation
 
 python -m venv venv
