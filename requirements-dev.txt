@@ -1,0 +1,13 @@
+# Just enough to run the fast test suite (test_pipeline.py).
+#
+# data_preprocessing.py and evaluation.py import torch, transformers and
+# bert-score lazily, inside the functions that need them, so the tests that
+# exercise parsing, splitting and the metrics need none of those. sacrebleu and
+# rouge-score are pure Python and small; BERTScore is the one metric that needs
+# torch, and the suite skips it.
+#
+# Keeping CI on this file means a push is checked in seconds rather than after a
+# multi-gigabyte torch download.
+pandas>=2.0
+sacrebleu>=2.4
+rouge-score>=0.1.2

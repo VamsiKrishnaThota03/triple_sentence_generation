@@ -8,6 +8,10 @@ A research project on turning knowledge-graph triplets *(subject, predicate, obj
 ![LaTeX](https://img.shields.io/badge/LaTeX-elsarticle-008080?logo=latex&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
+[![CI](https://github.com/VamsiKrishnaThota03/triple_sentence_generation/actions/workflows/ci.yml/badge.svg)](https://github.com/VamsiKrishnaThota03/triple_sentence_generation/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/VamsiKrishnaThota03/triple_sentence_generation/actions/workflows/codeql.yml/badge.svg)](https://github.com/VamsiKrishnaThota03/triple_sentence_generation/actions/workflows/codeql.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 **Authors:** Vamsi Krishna, Tejeshwar Rao, Ruthvika Talagampala, Nida Afseen  
 *PDPM Indian Institute of Information Technology, Design and Manufacturing, Jabalpur, India*
 
@@ -156,3 +160,29 @@ To regenerate the figure: `python scripts/make_architecture_figure.py`. You can 
 ## License
 
 Released under the [MIT License](LICENSE).
+
+
+## Tests and CI
+
+```bash
+pip install -r requirements-dev.txt
+python -m unittest -v test_pipeline     # 8 tests, a few seconds
+```
+
+`data_preprocessing.py` and `evaluation.py` import torch, transformers and
+bert-score **lazily**, inside the functions that need them. That is a useful
+property, and `requirements-dev.txt` exists to exploit it: the fast suite — REBEL
+linearisation parsing, the single-triplet filter, detokenisation, the local-CSV
+split, and BLEU/ROUGE/token-overlap — needs only pandas, sacrebleu and
+rouge-score. CI therefore completes in seconds instead of after a
+multi-gigabyte torch download.
+
+| Job | What it proves |
+| --- | --- |
+| `test` (Python 3.11, 3.12) | The 8 fast tests on the minimal dependency set, **plus** an explicit check that torch, transformers, bert-score, accelerate and datasets are *not* installed. If someone moves a heavy import to module level, that fails with a message naming the cause instead of a confusing `ImportError` in an unrelated test |
+| `imports` | Installs the full `requirements.txt` and imports every module, including the training path the fast job cannot reach, and runs `main.py --help` to confirm the CLI is usable without downloading a model |
+
+BERTScore is the one metric that genuinely needs torch, and the suite skips it
+rather than pretending to cover it.
+
+CodeQL runs over Python weekly; Dependabot watches pip and Actions.
